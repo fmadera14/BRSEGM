@@ -1,0 +1,93 @@
+## Build
+bin/
+obj/
+out/
+generated/
+
+## Runtime
+*.db
+*.db-journal
+*.log
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Visual Studio
+.vs/
+
+# If using Visual Studio Code
+.vscode/
+.history/
+*.code-workspace
+
+## NuGet packages
+*.nupkg
+# The packages folder can be ignored because of restore
+**/packages/*
+# except build/, which is used as an MSBuild target.
+!**/packages/build/
+# Uncomment if necessary
+# !**/packages/repositories.config
+
+## ASP.NET Core secrets
+secrets.json
+
+## EF Core Migrations (optional—remove if you want migrations tracked)
+# Migrations/
+
+## Logs
+logs/
+*.log
+log.txt
+
+## Temporary files
+*.tmp
+*.temp
+*.cache
+*.bak
+
+## Transient files
+*.pid
+*.seed
+*.pid.lock
+
+## Publish output
+publish/
+*.pubxml
+*.pubxml.user
+
+## JetBrains Rider
+.idea/
+*.sln.iml
+
+## Node / Frontend (si tu .NET Core usa front-end integrado)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+## Environment variables
+.env
+.env.*
+
+## Certificates
+*.pfx
+*.p12
+
+## ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+## Coverage
+coverage/
+*.lcov
+TestResults/
+*.coverage
+*.coveragexml
+
+## Docker
+docker-compose.override.yml
