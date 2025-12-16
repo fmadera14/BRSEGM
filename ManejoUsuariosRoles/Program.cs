@@ -1,4 +1,7 @@
 
+using ManejoUsuariosRoles.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace ManejoUsuariosRoles
 {
     public class Program
@@ -7,6 +10,7 @@ namespace ManejoUsuariosRoles
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
             // Add services to the container.
 
             builder.Services.AddControllers();
