@@ -1,11 +1,16 @@
-﻿namespace ManejoUsuariosRoles.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ManejoUsuariosRoles.Models
 {
+    [Table("estados")]
     public class Estado
     {
+        [Key]
+        [Column("id_estado")]
         public int IdEstado { get; set; }
-        public string Descripcion { get; set; }
 
-        public ICollection<Usuario> Usuarios { get; set; }
-        public ICollection<Rol> Roles { get; set; }
+        [Column("descripcion")]
+        public string Descripcion { get; set; }
     }
 }

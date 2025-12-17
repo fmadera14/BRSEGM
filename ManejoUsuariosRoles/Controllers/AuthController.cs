@@ -3,6 +3,7 @@ using ManejoUsuariosRoles.Data;
 using ManejoUsuariosRoles.Logic.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ManejoUsuariosRoles.Controllers
 {
@@ -38,6 +39,27 @@ namespace ManejoUsuariosRoles.Controllers
             var token = _jwt.GenerateToken(user);
 
             return Ok(new { token });
+        }
+
+        [Authorize(Policy = "PERM_escritura")]
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(RegisterDto dto)
+        {
+            var existingUser = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.NombreUsuario == dto.NombreUsuario);
+            if (existingUser != null)
+                return BadRequest("El nombre de usuario ya está en uso");
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+            var newUser = new Models.Usuario
+            {
+                NombreUsuario = dto.NombreUsuario,
+                Contraseña = hashedPassword,
+                IdRol = dto.IdRol,
+                IdEstado = 1 // activo por defecto
+            };
+            _context.Usuarios.Add(newUser);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Usuario registrado exitosamente" });
         }
     }
 }

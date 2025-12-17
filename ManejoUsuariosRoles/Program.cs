@@ -1,12 +1,13 @@
 
 using ManejoUsuariosRoles.Data;
+using ManejoUsuariosRoles.Logic;
 using Microsoft.EntityFrameworkCore;
 
 namespace ManejoUsuariosRoles
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,9 @@ namespace ManejoUsuariosRoles
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.AddAuthentication();
+            builder.Services.AddAuthorization();
 
             var app = builder.Build();
 
@@ -29,10 +33,19 @@ namespace ManejoUsuariosRoles
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
             app.MapControllers();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+                await DatabaseSeeder.SeedAsync(context, config);
+            }
 
             app.Run();
         }
