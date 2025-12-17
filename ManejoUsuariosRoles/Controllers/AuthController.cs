@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using ManejoUsuariosRoles.Logic.Interface;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace ManejoUsuariosRoles.Controllers
 {
@@ -45,11 +47,11 @@ namespace ManejoUsuariosRoles.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error: {ex.Message}"); 
+                return StatusCode(500, $"Error: {ex.Message}");
             }
 
-            return Ok(new { rol = user.Rol.PermisoEscritura.ToString(),  token = token});
-        }   
+            return Ok(new { token });
+        }
 
         [Authorize(Policy = "PERM_escritura")]
         [HttpPost("register")]
@@ -70,6 +72,46 @@ namespace ManejoUsuariosRoles.Controllers
             _context.Usuarios.Add(newUser);
             await _context.SaveChangesAsync();
             return Ok(new { message = "Usuario registrado exitosamente" });
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> DetailMe()
+        {
+            var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdValue))
+                return Unauthorized("ID de usuario no encontrado");
+
+            if (!int.TryParse(userIdValue, out int userId))
+                return Unauthorized("ID de usuario inválido");
+
+            var user = await _context.Usuarios
+                .Include(u => u.Estado)
+                .Include(u => u.Rol)
+                .Where(u => u.IdUsuario == userId)
+                .Select(u => new UserDetailDto
+                {
+                    Id = u.IdUsuario,
+                    NombreUsuario = u.NombreUsuario,
+                    Estado = u.Estado.Descripcion,
+                    Rol = new RolDto
+                    {
+                        Id = u.Rol.IdRol,
+                        Descripcion = u.Rol.Descripcion,
+                        PermisoLectura = u.Rol.PermisoLectura,
+                        PermisoEscritura = u.Rol.PermisoEscritura,
+                        PermisoValidacion = u.Rol.PermisoValidacion,
+                        PermisoModificacion = u.Rol.PermisoModificacion,
+                        PermisoProcesar = u.Rol.PermisoProcesar
+                    }
+                })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+                return NotFound("Usuario no encontrado");
+
+            return Ok(user);
         }
     }
 }

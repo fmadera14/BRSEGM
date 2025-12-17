@@ -78,6 +78,17 @@ namespace ManejoUsuariosRoles.Controllers
 
             return Ok();
         }
+
+        [Authorize]
+        [HttpGet("ping")]
+        public IActionResult Ping()
+        {
+            return Ok(new
+            {
+                user = User.Identity?.Name,
+                claims = User.Claims.Select(c => new { c.Type, c.Value })
+            });
+        }
     }
 
 }
