@@ -1,9 +1,9 @@
 ﻿using ManejoUsuariosRoles.Data.DTOs;
 using ManejoUsuariosRoles.Data;
-using ManejoUsuariosRoles.Logic.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
+using ManejoUsuariosRoles.Logic.Interface;
 
 namespace ManejoUsuariosRoles.Controllers
 {
@@ -12,9 +12,9 @@ namespace ManejoUsuariosRoles.Controllers
     public class AuthController : Controller
     {
         private readonly AppDbContext _context;
-        private readonly JwtService _jwt;
+        private readonly IJwtService _jwt;
 
-        public AuthController(AppDbContext context, JwtService jwt)
+        public AuthController(AppDbContext context, IJwtService jwt)
         {
             _context = context;
             _jwt = jwt;
@@ -25,6 +25,7 @@ namespace ManejoUsuariosRoles.Controllers
         {
             var user = await _context.Usuarios
                 .Include(u => u.Rol)
+                .Include(u => u.Estado)
                 .FirstOrDefaultAsync(u => u.NombreUsuario == dto.NombreUsuario);
 
             if (user == null)
@@ -33,10 +34,19 @@ namespace ManejoUsuariosRoles.Controllers
             if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.Contraseña))
                 return Unauthorized("Credenciales inválidas");
 
-            if (user.Estado.IdEstado != 1) // activo
+            if (user.Estado == null || user.Estado.IdEstado != 1) // activo
                 return Unauthorized("Usuario inactivo");
 
-            var token = _jwt.GenerateToken(user);
+            var token = string.Empty;
+
+            try
+            {
+                token = _jwt.GenerateToken(user);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error: ex");
+            }
 
             return Ok(new { token });
         }
