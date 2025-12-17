@@ -45,10 +45,10 @@ namespace ManejoUsuariosRoles.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error: {ex.Message}");
+                return StatusCode(500, $"Error: {ex.Message}"); 
             }
 
-            return Ok(new { token });
+            return Ok(new { rol = user.Rol.PermisoEscritura.ToString(),  token = token});
         }   
 
         [Authorize(Policy = "PERM_escritura")]

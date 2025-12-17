@@ -7,28 +7,23 @@ using ManejoUsuariosRoles.Logic.Interface;
 
 namespace ManejoUsuariosRoles.Logic.Services
 {
-    public class JwtService : IJwtService
+    public class JwtService(IConfiguration config) : IJwtService
     {
-        private readonly IConfiguration _config;
-
-        public JwtService(IConfiguration config)
-        {
-            _config = config;
-        }
+        private readonly IConfiguration _config = config;
 
         public string GenerateToken(Usuario user)
         {
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.IdUsuario.ToString()),
-                new Claim("username", user.NombreUsuario),
-                new Claim("rol", user.Rol.Descripcion),
+                new(JwtRegisteredClaimNames.Sub, user.IdUsuario.ToString()),
+                new("username", user.NombreUsuario),
+                new("rol", user.Rol.Descripcion),
 
-                new Claim("perm_lectura", user.Rol.PermisoLectura.ToString()),
-                new Claim("perm_escritura", user.Rol.PermisoEscritura.ToString()),
-                new Claim("perm_validacion", user.Rol.PermisoValidacion.ToString()),
-                new Claim("perm_modificacion", user.Rol.PermisoModificacion.ToString()),
-                new Claim("perm_procesar", user.Rol.PermisoProcesar.ToString())
+                new("perm_lectura", user.Rol.PermisoLectura.ToString()),
+                new("perm_escritura", user.Rol.PermisoEscritura.ToString()),
+                new("perm_validacion", user.Rol.PermisoValidacion.ToString()),
+                new("perm_modificacion", user.Rol.PermisoModificacion.ToString()),
+                new("perm_procesar", user.Rol.PermisoProcesar.ToString())
             };
 
             var key = new SymmetricSecurityKey(
@@ -38,6 +33,8 @@ namespace ManejoUsuariosRoles.Logic.Services
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
                 expires: DateTime.UtcNow.AddHours(4),
                 claims: claims,
                 signingCredentials: creds
