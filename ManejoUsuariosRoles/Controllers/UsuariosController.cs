@@ -1,4 +1,5 @@
 ﻿using ManejoUsuariosRoles.Data;
+using ManejoUsuariosRoles.Data.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,39 @@ namespace ManejoUsuariosRoles.Controllers
 
             return Ok(users);
         }
+
+        [Authorize(Policy = "PERM_lectura")]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUserDetail(int id)
+        {
+            var user = await _context.Usuarios
+                .Include(u => u.Estado)
+                .Include(u => u.Rol)
+                .Where(u => u.IdUsuario == id)
+                .Select(u => new UserDetailDto
+                {
+                    Id = u.IdUsuario,
+                    NombreUsuario = u.NombreUsuario,
+                    Estado = u.Estado.Descripcion,
+                    Rol = new RolDto
+                    {
+                        Id = u.Rol.IdRol,
+                        Descripcion = u.Rol.Descripcion,
+                        PermisoLectura = u.Rol.PermisoLectura,
+                        PermisoEscritura = u.Rol.PermisoEscritura,
+                        PermisoValidacion = u.Rol.PermisoValidacion,
+                        PermisoModificacion = u.Rol.PermisoModificacion,
+                        PermisoProcesar = u.Rol.PermisoProcesar
+                    }
+                })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+                return NotFound("Usuario no encontrado");
+
+            return Ok(user);
+        }
+
 
         [Authorize(Policy = "PERM_modificacion")]
         [HttpPatch("{id}/disable")]
