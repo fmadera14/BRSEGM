@@ -86,6 +86,66 @@ namespace ManejoUsuariosRoles.Controllers
             return Ok();
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, UpdateUserDto dto)
+        {
+            // Obtener ID del usuario autenticado
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            int currentUserId = int.Parse(userIdClaim);
+
+            // ¿Es el mismo usuario?
+            bool isSelf = currentUserId == id;
+
+            // ¿Tiene permiso de modificación?
+            bool hasModifyPermission =
+                User.HasClaim("perm_modificacion", "True");
+
+            // Regla de acceso
+            if (!isSelf && !hasModifyPermission)
+                return Forbid("No tienes permiso para modificar este usuario");
+
+            // Buscar usuario a modificar
+            var user = await _context.Usuarios.FindAsync(id);
+            if (user == null)
+                return NotFound("Usuario no encontrado");
+
+            // Aplicar cambios permitidos
+            if (!string.IsNullOrWhiteSpace(dto.NombreUsuario))
+                user.NombreUsuario = dto.NombreUsuario;
+
+            // Cambios sensibles: solo si tiene permiso
+            if (dto.IdRol.HasValue)
+            {
+                if (!hasModifyPermission)
+                    return Forbid("No puedes cambiar el rol de otro usuario");
+
+                user.IdRol = dto.IdRol.Value;
+            }
+
+            if (dto.IdEstado.HasValue)
+            {
+                if (!hasModifyPermission)
+                    return Forbid("No puedes cambiar el estado de otro usuario");
+
+                user.IdEstado = dto.IdEstado.Value;
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Auditoría
+            await _auditService.RegistrarAsync(
+                tabla: "usuarios",
+                idRegistro: user.IdUsuario,
+                tipoOperacion: "UPDATE",
+                idUsuario: currentUserId
+            );
+
+            return Ok(new { message = "Usuario actualizado correctamente" });
+        }
+
         [Authorize]
         [HttpGet("ping")]
         public IActionResult Ping()
