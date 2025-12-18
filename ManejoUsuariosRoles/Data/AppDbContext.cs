@@ -11,5 +11,7 @@ namespace ManejoUsuariosRoles.Data
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Rol> Roles { get; set; }
         public DbSet<Estado> Estados { get; set; }
+        public DbSet<Auditoria> Auditorias { get; set; }
+        public DbSet<RegistroAuditado> RegistrosAuditados { get; set; }
     }
 }

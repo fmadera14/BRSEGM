@@ -1,5 +1,7 @@
 using ManejoUsuariosRoles.Data;
 using ManejoUsuariosRoles.Logic;
+using ManejoUsuariosRoles.Logic.Interface;
+using ManejoUsuariosRoles.Logic.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -17,6 +19,7 @@ namespace ManejoUsuariosRoles
             // Add services to the container.
 
             builder.Services.AddScoped<Logic.Interface.IJwtService, Logic.Services.JwtService>();
+            builder.Services.AddScoped<IAuditService, AuditService>();
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

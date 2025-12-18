@@ -1,6 +1,7 @@
 ﻿using ManejoUsuariosRoles.Data;
 using ManejoUsuariosRoles.Data.DTOs;
 using ManejoUsuariosRoles.Logic.Interface;
+using ManejoUsuariosRoles.Logic.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,16 +12,11 @@ namespace ManejoUsuariosRoles.Controllers
 {
     [ApiController]
     [Route("auth")]
-    public class AuthController : Controller
+    public class AuthController(AppDbContext context, IJwtService jwt, IAuditService auditService) : Controller
     {
-        private readonly AppDbContext _context;
-        private readonly IJwtService _jwt;
-
-        public AuthController(AppDbContext context, IJwtService jwt)
-        {
-            _context = context;
-            _jwt = jwt;
-        }
+        private readonly AppDbContext _context = context;
+        private readonly IJwtService _jwt = jwt;
+        private readonly IAuditService _auditService = auditService;
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto)
@@ -67,10 +63,20 @@ namespace ManejoUsuariosRoles.Controllers
                 NombreUsuario = dto.NombreUsuario,
                 Contraseña = hashedPassword,
                 IdRol = dto.IdRol,
-                IdEstado = 1 // activo por defecto
+                IdEstado = 1
             };
             _context.Usuarios.Add(newUser);
             await _context.SaveChangesAsync();
+
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            await _auditService.RegistrarAsync(
+                tabla: "usuarios",
+                idRegistro: newUser.IdUsuario,
+                tipoOperacion: "INSERT",
+                idUsuario: userId
+            );
+
             return Ok(new { message = "Usuario registrado exitosamente" });
         }
 
