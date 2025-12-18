@@ -1,23 +1,20 @@
 ﻿using ManejoUsuariosRoles.Data;
 using ManejoUsuariosRoles.Data.DTOs;
+using ManejoUsuariosRoles.Logic.Interface;
 using ManejoUsuariosRoles.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace ManejoUsuariosRoles.Controllers
 {
     [ApiController]
     [Route("roles")]
     [Authorize]
-    public class RolesController : Controller
+    public class RolesController(AppDbContext context, IAuditService _auditService) : Controller
     {
-        private readonly AppDbContext _context;
-
-        public RolesController(AppDbContext context)
-        {
-            _context = context;
-        }
+        private readonly AppDbContext _context = context;
 
         [HttpGet]
         [Authorize(Policy = "PERM_lectura")]
@@ -46,10 +43,45 @@ namespace ManejoUsuariosRoles.Controllers
 
         [HttpPost]
         [Authorize(Policy = "PERM_escritura")]
-        public async Task<IActionResult> Create(Rol rol)
+        public async Task<IActionResult> Create(CreateRolDto dto)
         {
-            _context.Roles.Add(rol);
-            await _context.SaveChangesAsync();
+            var rol = new Rol
+            {
+                Descripcion = dto.Descripcion,
+                PermisoLectura = dto.PermisoLectura,
+                PermisoEscritura = dto.PermisoEscritura,
+                PermisoValidacion = dto.PermisoValidacion,
+                PermisoModificacion = dto.PermisoModificacion,
+                PermisoProcesar = dto.PermisoProcesar,
+                IdEstado = 1
+            };
+
+            try
+            {
+                _context.Roles.Add(rol);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (
+                ex.InnerException is Npgsql.PostgresException pg &&
+                pg.SqlState == "23505"
+            )
+            {
+                return Conflict(new
+                {
+                    message = "Ya existe un rol con esa descripción"
+                });
+            }
+
+            // Audit logging can be added here
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            await _auditService.RegistrarAsync(
+                tabla: "usuarios",
+                idRegistro: rol.IdRol,
+                tipoOperacion: "INSERT",
+                idUsuario: userId
+            );
+
             return Ok(rol);
         }
     }
