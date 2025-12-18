@@ -1,9 +1,9 @@
 ﻿using ManejoUsuariosRoles.Models;
+using ManejoUsuariosRoles.Logic.Interface;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using ManejoUsuariosRoles.Logic.Interface;
 
 namespace ManejoUsuariosRoles.Logic.Services
 {

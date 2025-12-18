@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ManejoUsuariosRoles.Models;
+﻿using ManejoUsuariosRoles.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace ManejoUsuariosRoles.Data
 {
