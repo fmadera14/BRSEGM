@@ -96,5 +96,54 @@ namespace ManejoUsuariosRoles.Controllers
 
             return Ok(rolDetail);
         }
+
+        [Authorize(Policy = "PERM_modificacion")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, UpdateRolDto dto)
+        {
+            // Obtener ID del usuario autenticado
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            int currentUserId = int.Parse(userIdClaim);
+
+            // Buscar rol a modificar
+            var rol = await _context.Roles.FindAsync(id);
+            if (rol == null)
+                return NotFound("Rol no encontrado");
+
+            // Actualizar campos
+            rol.Descripcion = dto.Descripcion;
+            rol.PermisoLectura = dto.PermisoLectura;
+            rol.PermisoEscritura = dto.PermisoEscritura;
+            rol.PermisoValidacion = dto.PermisoValidacion;
+            rol.PermisoModificacion = dto.PermisoModificacion;
+            rol.PermisoProcesar = dto.PermisoProcesar;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (
+                ex.InnerException is Npgsql.PostgresException pg &&
+                pg.SqlState == "23505"
+            )
+            {
+                return Conflict(new
+                {
+                    message = "Ya existe un rol con esa descripción"
+                });
+            }
+
+            await _auditService.RegistrarAsync(
+                tabla: "roles",
+                idRegistro: rol.IdRol,
+                tipoOperacion: "UPDATE",
+                idUsuario: currentUserId
+            );
+
+            return Ok(new { message = "Rol actualizado correctamente" });
+        }
     }
 }
