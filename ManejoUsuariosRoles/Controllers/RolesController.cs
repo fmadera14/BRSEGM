@@ -120,6 +120,7 @@ namespace ManejoUsuariosRoles.Controllers
             rol.PermisoValidacion = dto.PermisoValidacion;
             rol.PermisoModificacion = dto.PermisoModificacion;
             rol.PermisoProcesar = dto.PermisoProcesar;
+            rol.IdEstado = dto.IdEstado;
 
             try
             {
