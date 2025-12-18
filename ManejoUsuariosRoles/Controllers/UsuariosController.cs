@@ -17,16 +17,58 @@ namespace ManejoUsuariosRoles.Controllers
 
         [Authorize(Policy = "PERM_lectura")]
         [HttpGet]
-        public async Task<IActionResult> GetUsers()
+        public async Task<IActionResult> GetUsers([FromQuery] UserQueryDto query)
         {
-            var users = await _context.Usuarios.Include(u => u.Rol).Include(u => u.Estado).Select(u => new {
-                u.IdUsuario,
-                u.NombreUsuario,
-                u.IdRol,
-                Rol = u.Rol.Descripcion,
-                u.IdEstado,
-                Estado = u.Estado.Descripcion
-            }).OrderBy(u => u.IdUsuario).ToListAsync();
+            var usersQuery = _context.Usuarios
+            .Include(u => u.Rol)
+            .Include(u => u.Estado)
+            .AsQueryable();
+
+            // Filtros
+            if (!string.IsNullOrWhiteSpace(query.Nombre))
+            {
+                usersQuery = usersQuery.Where(u =>
+                    u.NombreUsuario.ToLower().Contains(query.Nombre.ToLower()));
+            }
+
+            if (query.IdRol.HasValue)
+            {
+                usersQuery = usersQuery.Where(u => u.IdRol == query.IdRol.Value);
+            }
+
+            if (query.IdEstado.HasValue)
+            {
+                usersQuery = usersQuery.Where(u => u.IdEstado == query.IdEstado.Value);
+            }
+
+            // Ordenamiento
+            usersQuery = query.OrderBy?.ToLower() switch
+            {
+                "nombre" => query.OrderDir == "desc"
+                    ? usersQuery.OrderByDescending(u => u.NombreUsuario)
+                    : usersQuery.OrderBy(u => u.NombreUsuario),
+
+                "rol" => query.OrderDir == "desc"
+                    ? usersQuery.OrderByDescending(u => u.Rol.Descripcion)
+                    : usersQuery.OrderBy(u => u.Rol.Descripcion),
+
+                _ => query.OrderDir == "desc"
+                    ? usersQuery.OrderByDescending(u => u.IdUsuario)
+                    : usersQuery.OrderBy(u => u.IdUsuario)
+            };
+
+            // Proyección final
+            var users = await usersQuery
+                .Select(u => new
+                {
+                    u.IdUsuario,
+                    u.NombreUsuario,
+                    u.IdRol,
+                    Rol = u.Rol.Descripcion,
+                    u.IdEstado,
+                    Estado = u.Estado.Descripcion
+                })
+                .ToListAsync();
 
             return Ok(users);
         }
@@ -148,17 +190,5 @@ namespace ManejoUsuariosRoles.Controllers
 
             return Ok(new { message = "Usuario actualizado correctamente" });
         }
-
-        [Authorize]
-        [HttpGet("ping")]
-        public IActionResult Ping()
-        {
-            return Ok(new
-            {
-                user = User.Identity?.Name,
-                claims = User.Claims.Select(c => new { c.Type, c.Value })
-            });
-        }
     }
-
 }
