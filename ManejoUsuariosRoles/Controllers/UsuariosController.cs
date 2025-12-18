@@ -1,32 +1,29 @@
 ﻿using ManejoUsuariosRoles.Data;
 using ManejoUsuariosRoles.Data.DTOs;
+using ManejoUsuariosRoles.Logic.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace ManejoUsuariosRoles.Controllers
 {
     [ApiController]
     [Route("users")]
     [Authorize]
-    public class UsersController : ControllerBase
+    public class UsersController(AppDbContext context, IAuditService _auditService) : ControllerBase
     {
-        private readonly AppDbContext _context;
-
-        public UsersController(AppDbContext context)
-        {
-            _context = context;
-        }
+        private readonly AppDbContext _context = context;
 
         [Authorize(Policy = "PERM_lectura")]
         [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
-            var users = await _context.Usuarios.Include(u => u.Rol).Select(u => new {
+            var users = await _context.Usuarios.Include(u => u.Rol).Include(u => u.Estado).Select(u => new {
                 u.IdUsuario,
                 u.NombreUsuario,
                 Rol = u.Rol.Descripcion,
-                u.IdEstado
+                Estado = u.Estado.Descripcion
             }).ToListAsync();
 
             return Ok(users);
@@ -75,6 +72,16 @@ namespace ManejoUsuariosRoles.Controllers
 
             user.IdEstado = 5; // INACTIVO
             await _context.SaveChangesAsync();
+
+            // Audit logging can be added here
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            await _auditService.RegistrarAsync(
+                tabla: "usuarios",
+                idRegistro: user.IdUsuario,
+                tipoOperacion: "DISABLE",
+                idUsuario: userId
+            );
 
             return Ok();
         }
