@@ -22,9 +22,11 @@ namespace ManejoUsuariosRoles.Controllers
             var users = await _context.Usuarios.Include(u => u.Rol).Include(u => u.Estado).Select(u => new {
                 u.IdUsuario,
                 u.NombreUsuario,
+                u.IdRol,
                 Rol = u.Rol.Descripcion,
+                u.IdEstado,
                 Estado = u.Estado.Descripcion
-            }).ToListAsync();
+            }).OrderBy(u => u.IdUsuario).ToListAsync();
 
             return Ok(users);
         }
@@ -41,6 +43,7 @@ namespace ManejoUsuariosRoles.Controllers
                 {
                     Id = u.IdUsuario,
                     NombreUsuario = u.NombreUsuario,
+                    IdEstado = u.IdEstado,
                     Estado = u.Estado.Descripcion,
                     Rol = new RolDto
                     {
