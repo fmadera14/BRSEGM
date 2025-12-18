@@ -82,7 +82,19 @@ namespace ManejoUsuariosRoles.Controllers
                 idUsuario: userId
             );
 
-            return Ok(rol);
+            RolCreateDetailDto rolDetail = new RolCreateDetailDto
+            {
+                IdRol = rol.IdRol,
+                Descripcion = rol.Descripcion,
+                PermisoLectura = rol.PermisoLectura,
+                PermisoEscritura = rol.PermisoEscritura,
+                PermisoValidacion = rol.PermisoValidacion,
+                PermisoModificacion = rol.PermisoModificacion,
+                PermisoProcesar = rol.PermisoProcesar,
+                IdEstado = rol.IdEstado,
+            };
+
+            return Ok(rolDetail);
         }
     }
 }
