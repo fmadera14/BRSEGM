@@ -145,5 +145,30 @@ namespace ManejoUsuariosRoles.Controllers
 
             return Ok(new { message = "Rol actualizado correctamente" });
         }
+
+        [Authorize(Policy = "PERM_modificacion")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> SoftDeleteUser(int id)
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var rol = await _context.Roles.FindAsync(id);
+            if (rol == null)
+                return NotFound();
+
+            rol.IdEstado = 9; // ELIMINADO
+
+            await _context.SaveChangesAsync();
+
+            await _auditService.RegistrarAsync(
+                tabla: "usuarios",
+                idRegistro: rol.IdRol,
+                tipoOperacion: "SOFT_DELETE",
+                idUsuario: userId
+            );
+
+            return Ok(new { message = "Rol eliminado lógicamente" });
+        }
+
     }
 }
