@@ -190,5 +190,49 @@ namespace ManejoUsuariosRoles.Controllers
 
             return Ok(new { message = "Usuario actualizado correctamente" });
         }
+
+        [Authorize(Policy = "PERM_modificacion")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> SoftDeleteUser(int id)
+        {
+            // Usuario autenticado que ejecuta la acción
+            var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdValue))
+                return Unauthorized();
+
+            int currentUserId = int.Parse(userIdValue);
+
+            // Usuario a eliminar
+            var user = await _context.Usuarios.FindAsync(id);
+            if (user == null)
+                return NotFound("Usuario no encontrado");
+
+            // Regla opcional: no permitir auto-eliminación
+            if (currentUserId == id)
+                return BadRequest("No puedes eliminar tu propio usuario");
+
+            // Regla opcional: ya eliminado
+            if (user.IdEstado == 9)
+                return BadRequest("El usuario ya está eliminado");
+
+            // Soft delete
+            user.IdEstado = 9; // ELIMINADO
+
+            await _context.SaveChangesAsync();
+
+            // Auditoría
+            await _auditService.RegistrarAsync(
+                tabla: "usuarios",
+                idRegistro: user.IdUsuario,
+                tipoOperacion: "SOFT_DELETE",
+                idUsuario: currentUserId
+            );
+
+            return Ok(new
+            {
+                message = "Usuario eliminado exitosamente"
+            });
+        }
+
     }
 }
