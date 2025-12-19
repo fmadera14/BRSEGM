@@ -233,6 +233,5 @@ namespace ManejoUsuariosRoles.Controllers
                 message = "Usuario eliminado exitosamente"
             });
         }
-
     }
 }
