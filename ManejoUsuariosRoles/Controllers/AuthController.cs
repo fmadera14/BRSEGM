@@ -119,5 +119,50 @@ namespace ManejoUsuariosRoles.Controllers
 
             return Ok(user);
         }
+
+        [Authorize(Policy = "PERM_modificacion")]
+        [HttpPatch("change-password")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto dto)
+        {
+            // Obtener usuario autenticado
+            var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdValue))
+                return Unauthorized("Usuario no autenticado");
+
+            int userId = int.Parse(userIdValue);
+
+            var user = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.IdUsuario == userId);
+
+            if (user == null)
+                return Unauthorized("Usuario no encontrado");
+
+            // Validar contraseña actual
+            if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.Contraseña))
+                return BadRequest("La contraseña actual es incorrecta");
+
+            // Evitar reutilizar contraseña
+            if (BCrypt.Net.BCrypt.Verify(dto.NewPassword, user.Contraseña))
+                return BadRequest("La nueva contraseña no puede ser igual a la actual");
+
+            // Hash nueva contraseña
+            user.Contraseña = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+
+            await _context.SaveChangesAsync();
+
+            // Auditoría
+            await _auditService.RegistrarAsync(
+                tabla: "usuarios",
+                idRegistro: user.IdUsuario,
+                tipoOperacion: "CHANGE_PASSWORD",
+                idUsuario: userId
+            );
+
+            return Ok(new
+            {
+                message = "Contraseña actualizada correctamente"
+            });
+        }
     }
 }
