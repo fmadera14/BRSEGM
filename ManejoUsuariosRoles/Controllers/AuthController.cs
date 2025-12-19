@@ -164,5 +164,47 @@ namespace ManejoUsuariosRoles.Controllers
                 message = "Contraseña actualizada correctamente"
             });
         }
+
+        [Authorize(Policy = "PERM_escritura")]
+        [Authorize(Policy = "PERM_modificacion")]
+        [Authorize(Policy = "PERM_validacion")]
+        [Authorize(Policy = "PERM_procesar")]
+        [Authorize(Policy = "PERM_lectura")]
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDto dto)
+        {
+            // Usuario que ejecuta la acción
+            var adminIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(adminIdValue))
+                return Unauthorized();
+
+            int adminId = int.Parse(adminIdValue);
+
+            // Usuario objetivo
+            var user = await _context.Usuarios
+                .FirstOrDefaultAsync(u => u.IdUsuario == dto.IdUsuario);
+
+            if (user == null)
+                return NotFound("Usuario no encontrado");
+
+            // Resetear contraseña
+            user.Contraseña = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+
+            await _context.SaveChangesAsync();
+
+            // Auditoría
+            await _auditService.RegistrarAsync(
+                tabla: "usuarios",
+                idRegistro: user.IdUsuario,
+                tipoOperacion: "RESET_PASSWORD",
+                idUsuario: adminId
+            );
+
+            return Ok(new
+            {
+                message = "Contraseña reseteada correctamente"
+            });
+        }
+
     }
 }
