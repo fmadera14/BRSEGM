@@ -95,6 +95,17 @@ namespace ConfiguracioParametros.Controllers
             if (!int.TryParse(userIdValue, out int userId))
                 return Unauthorized("ID de usuario inválido");
 
+            bool existeParametro = await _context.SEGMParametros
+                .AnyAsync(p =>
+                    p.IdUsuario == userId &&
+                    p.NombreClave == dto.NombreClave &&
+                    p.IdEstado != 9 &&
+                    p.IdParametro != id
+                );
+
+            if (existeParametro)
+                return Conflict($"Ya existe un parámetro con la clave '{dto.NombreClave}' para este usuario.");
+
             var parametro = await _context.SEGMParametros.FindAsync(id);
             if (parametro == null)
                 return NotFound("Parámetro no encontrado");
