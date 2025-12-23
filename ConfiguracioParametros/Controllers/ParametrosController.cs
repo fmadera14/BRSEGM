@@ -86,7 +86,7 @@ namespace ConfiguracioParametros.Controllers
             _context.SEGMParametros.Update(parametro);
             await _context.SaveChangesAsync();
             await _auditService.RegistrarAsync("SEGMParametros", parametro.IdParametro, "UPDATE", userId);
-            return NoContent();
+            return Ok(new { message = "Parametro modificado exitosamente" });
         }
 
         [Authorize(Policy = "PERM_modificacion")]
