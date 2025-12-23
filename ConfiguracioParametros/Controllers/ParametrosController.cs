@@ -62,5 +62,29 @@ namespace ConfiguracioParametros.Controllers
             await _auditService.RegistrarAsync("SEGMParametros", parametro.IdParametro, "INSERT", userId);
             return CreatedAtAction(nameof(GetParametros), new { id = parametro.IdParametro }, parametro);
         }
+
+        [Authorize(Policy = "PERM_modificacion")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateParametro(int id, [FromBody] ParametroUpdateDto dto)
+        {
+            var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdValue))
+                return Unauthorized("ID de usuario no encontrado");
+            if (!int.TryParse(userIdValue, out int userId))
+                return Unauthorized("ID de usuario inválido");
+
+            var parametro = await _context.SEGMParametros.FindAsync(id);
+            if (parametro == null)
+                return NotFound("Parámetro no encontrado");
+
+            parametro.Valor = dto.Valor;
+            parametro.Descripcion = dto.Descripcion;
+            parametro.IdEstado = dto.IdEstado;
+            _context.SEGMParametros.Update(parametro);
+            await _context.SaveChangesAsync();
+            await _auditService.RegistrarAsync("SEGMParametros", parametro.IdParametro, "UPDATE", userId);
+            return NoContent();
+        }
     }
 }
