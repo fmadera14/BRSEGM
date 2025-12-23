@@ -1,5 +1,7 @@
 ﻿using ConfiguracioParametros.Data;
+using ConfiguracioParametros.Data.DTOs;
 using ConfiguracioParametros.Logic.Interface;
+using ConfiguracioParametros.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +35,32 @@ namespace ConfiguracioParametros.Controllers
                 .ToListAsync();
 
             return Ok(parametros);
+        }
+
+        [Authorize(Policy = "PERM_escritura")]
+        [HttpPost]
+        public async Task<IActionResult> CreateParametro([FromBody] ParametroInsertDto dto)
+        {
+            var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdValue))
+                return Unauthorized("ID de usuario no encontrado");
+            if (!int.TryParse(userIdValue, out int userId))
+                return Unauthorized("ID de usuario inválido");
+
+            SEGMParametro parametro = new()
+            {
+                IdUsuario = userId,
+                Valor = dto.Valor,
+                NombreClave = dto.NombreClave,
+                Descripcion = dto.Descripcion,
+                IdEstado = 1
+            };
+            _context.SEGMParametros.Add(parametro);
+            await _context.SaveChangesAsync();
+
+            await _auditService.RegistrarAsync("SEGMParametros", parametro.IdParametro, "INSERT", userId);
+            return CreatedAtAction(nameof(GetParametros), new { id = parametro.IdParametro }, parametro);
         }
     }
 }
