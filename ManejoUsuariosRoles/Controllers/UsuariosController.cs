@@ -131,6 +131,7 @@ namespace ManejoUsuariosRoles.Controllers
             return Ok();
         }
 
+        [Authorize(Policy = "PERM_modificacion")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, UpdateUserDto dto)
         {
