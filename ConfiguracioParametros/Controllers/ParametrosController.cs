@@ -34,6 +34,15 @@ namespace ConfiguracioParametros.Controllers
                 .Include(p => p.Estado)
                 .Where(p => p.Usuario.IdUsuario == userId)
                 .Where(p => p.IdEstado != 9)
+                .Select(p => new ParametroDto
+                {
+                    IdParametro = p.IdParametro,
+                    NombreClave = p.NombreClave,
+                    Descripcion = p.Descripcion,
+                    Valor = p.Valor,
+                    IdEstado = p.IdEstado,
+                    Estado = p.Estado.Descripcion
+                })
                 .ToListAsync();
 
             return Ok(parametros);
