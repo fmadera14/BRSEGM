@@ -31,7 +31,9 @@ namespace ConfiguracioParametros.Controllers
 
             var parametros = await _context.SEGMParametros
                 .Include(p => p.Usuario)
+                .Include(p => p.Estado)
                 .Where(p => p.Usuario.IdUsuario == userId)
+                .Where(p => p.IdEstado != 9)
                 .ToListAsync();
 
             return Ok(parametros);
