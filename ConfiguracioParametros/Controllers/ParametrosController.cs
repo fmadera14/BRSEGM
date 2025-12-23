@@ -86,5 +86,29 @@ namespace ConfiguracioParametros.Controllers
             await _auditService.RegistrarAsync("SEGMParametros", parametro.IdParametro, "UPDATE", userId);
             return NoContent();
         }
+
+        [Authorize(Policy = "PERM_modificacion")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> SoftDeleteParametro(int id)
+        {
+            var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            if (string.IsNullOrEmpty(userIdValue))
+                return Unauthorized("ID de usuario no encontrado");
+            if (!int.TryParse(userIdValue, out int userId))
+                return Unauthorized("ID de usuario inválido");
+            var parametro = await _context.SEGMParametros.FindAsync(id);
+            if (parametro == null)
+                return NotFound("Parámetro no encontrado");
+
+            parametro.IdEstado = 9;
+            
+            _context.SEGMParametros.Update(parametro);
+            await _context.SaveChangesAsync();
+            
+            await _auditService.RegistrarAsync("SEGMParametros", parametro.IdParametro, "SOFT_DELETE", userId);
+
+            return Ok(new {message = "Parametro eliminado exitosamente"});
+        }
     }
 }
