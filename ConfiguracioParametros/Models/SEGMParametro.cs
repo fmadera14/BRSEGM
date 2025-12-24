@@ -23,5 +23,9 @@ namespace ConfiguracioParametros.Models
         public int IdUsuario { get; set; }
         [ForeignKey("IdUsuario")]
         public Usuario Usuario { get; set; }
+        [Column("id_tipo_parametro")]
+        public int IdTipoParametro { get; set; }
+        [ForeignKey("IdTipoParametro")]
+        public TipoParametro TipoParametro { get; set; }
     }
 }

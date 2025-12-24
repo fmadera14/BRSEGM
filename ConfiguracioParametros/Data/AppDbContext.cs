@@ -11,5 +11,6 @@ namespace ConfiguracioParametros.Data
         public DbSet<Auditoria> Auditorias { get; set; }
         public DbSet<RegistroAuditado> RegistrosAuditados { get; set; }
         public DbSet<SEGMParametro> SEGMParametros { get; set; }
+        public DbSet<TipoParametro> TiposParametros { get; set; }
     }
 }
