@@ -77,8 +77,10 @@ namespace ConfiguracioParametros.Controllers
                 Valor = dto.Valor,
                 NombreClave = dto.NombreClave,
                 Descripcion = dto.Descripcion,
-                IdEstado = 1
+                IdEstado = 1,
+                IdTipoParametro = dto.IdTipoParametro
             };
+
             _context.SEGMParametros.Add(parametro);
             await _context.SaveChangesAsync();
 
