@@ -20,7 +20,7 @@ namespace ConfiguracioParametros.Controllers
 
         [Authorize(Policy = "PERM_lectura")]
         [HttpGet]
-        public async Task<IActionResult> GetParametros()
+        public async Task<IActionResult> GetParametros([FromQuery] string? descripcion)
         {
             var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -30,8 +30,15 @@ namespace ConfiguracioParametros.Controllers
             if (!int.TryParse(userIdValue, out int userId))
                 return Unauthorized("ID de usuario inválido");
 
-            var tiposParametro = await _context.TiposParametros
-                .ToListAsync();
+            IQueryable<TipoParametro> query = _context.TiposParametros;
+
+            if (!string.IsNullOrWhiteSpace(descripcion))
+            {
+                query = query.Where(x =>
+                    EF.Functions.Like(x.Descripcion, $"%{descripcion}%"));
+            }
+
+            var tiposParametro = await query.ToListAsync();
 
             return Ok(tiposParametro);
         }
