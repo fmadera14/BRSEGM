@@ -85,5 +85,29 @@ namespace ConfiguracioParametros.Controllers
                 });
             }
         }
+
+        [Authorize(Policy = "PERM_modificacion")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateTipoParametro(int id, [FromBody] TipoParametroCreateDto dto)
+        {
+            var tipoParametro = await _context.TiposParametros.FirstOrDefaultAsync(tp => tp.IdTipoParametro == id);
+
+            if (tipoParametro == null) return NotFound("El tipo de parametro no existe");
+
+            tipoParametro.Descripcion = dto.Descripcion;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (DbUpdateException ex)
+            {
+                return Conflict(new
+                {
+                    message = "No se puede actualizar el tipo de parámetro."
+                });
+            }
+        }
     }
 }
