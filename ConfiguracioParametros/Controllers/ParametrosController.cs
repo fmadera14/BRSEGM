@@ -32,6 +32,7 @@ namespace ConfiguracioParametros.Controllers
             var parametros = await _context.SEGMParametros
                 .Include(p => p.Usuario)
                 .Include(p => p.Estado)
+                .Include(p => p.TipoParametro)
                 .Where(p => p.Usuario.IdUsuario == userId)
                 .Where(p => p.IdEstado != 9)
                 .Select(p => new ParametroDto
@@ -41,7 +42,9 @@ namespace ConfiguracioParametros.Controllers
                     Descripcion = p.Descripcion,
                     Valor = p.Valor,
                     IdEstado = p.IdEstado,
-                    Estado = p.Estado.Descripcion
+                    Estado = p.Estado.Descripcion,
+                    IdTipoParametro = p.IdTipoParametro,
+                    TipoParametro = p.TipoParametro.Descripcion
                 })
                 .ToListAsync();
 
