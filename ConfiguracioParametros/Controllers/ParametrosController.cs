@@ -19,7 +19,12 @@ namespace ConfiguracioParametros.Controllers
 
         [Authorize(Policy = "PERM_lectura")]
         [HttpGet]
-        public async Task<IActionResult> GetParametros()
+        public async Task<IActionResult> GetParametros(
+            [FromQuery] string? descripcion,
+            [FromQuery] string? nombreClave,
+            [FromQuery] int? idTipoParametro,
+            [FromQuery] int? idEstado
+        )
         {
             var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -29,9 +34,36 @@ namespace ConfiguracioParametros.Controllers
             if (!int.TryParse(userIdValue, out int userId))
                 return Unauthorized("ID de usuario inválido");
 
-            var parametros = await _context.SEGMParametros
-                .Where(p => p.IdUsuario == userId)
-                .Where(p => p.IdEstado != 9)
+            IQueryable<SEGMParametro> query = _context.SEGMParametros
+                .Where(p => p.IdUsuario == userId);
+
+            if (!string.IsNullOrWhiteSpace(descripcion))
+            {
+                query = query.Where(p =>
+                    EF.Functions.Like(p.Descripcion, $"%{descripcion}%"));
+            }
+
+            if (!string.IsNullOrWhiteSpace(nombreClave))
+            {
+                query = query.Where(p =>
+                    EF.Functions.Like(p.NombreClave, $"%{nombreClave}%"));
+            }
+
+            if (idTipoParametro.HasValue)
+            {
+                query = query.Where(p => p.IdTipoParametro == idTipoParametro.Value);
+            }
+
+            if (idEstado.HasValue)
+            {
+                query = query.Where(p => p.IdEstado == idEstado.Value);
+            } 
+            else
+            {
+                query = query.Where(p => p.IdEstado != 9);
+            }
+
+            var parametros = await query
                 .Include(p => p.Estado)
                 .Include(p => p.TipoParametro)
                 .Select(p => new ParametroDto
