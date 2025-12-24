@@ -30,11 +30,10 @@ namespace ConfiguracioParametros.Controllers
                 return Unauthorized("ID de usuario inválido");
 
             var parametros = await _context.SEGMParametros
-                .Include(p => p.Usuario)
+                .Where(p => p.IdUsuario == userId)
+                .Where(p => p.IdEstado != 9)
                 .Include(p => p.Estado)
                 .Include(p => p.TipoParametro)
-                .Where(p => p.Usuario.IdUsuario == userId)
-                .Where(p => p.IdEstado != 9)
                 .Select(p => new ParametroDto
                 {
                     IdParametro = p.IdParametro,
@@ -116,6 +115,8 @@ namespace ConfiguracioParametros.Controllers
             parametro.Valor = dto.Valor;
             parametro.Descripcion = dto.Descripcion;
             parametro.IdEstado = dto.IdEstado;
+            parametro.IdTipoParametro = dto.IdTipoParametro;
+
             _context.SEGMParametros.Update(parametro);
             await _context.SaveChangesAsync();
             await _auditService.RegistrarAsync("SEGMParametros", parametro.IdParametro, "UPDATE", userId);

@@ -6,5 +6,6 @@
         public string NombreClave { get; set; }
         public string Descripcion { get; set; }
         public int IdEstado { get; set; }
+        public int IdTipoParametro { get; set; }
     }
 }
