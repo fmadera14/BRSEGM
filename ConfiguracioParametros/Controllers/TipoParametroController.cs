@@ -12,7 +12,7 @@ namespace ConfiguracioParametros.Controllers
 {
     [ApiController]
     [Route("tipo-parametro")]
-    public class TipoParametroController(AppDbContext context, IAuditService auditService, IJwtService jwtService) :  Controller
+    public class TipoParametroController(AppDbContext context, IAuditService auditService, IJwtService jwtService) : Controller
     {
         private readonly AppDbContext _context = context;
         private readonly IJwtService _jwtService = jwtService;
@@ -59,6 +59,31 @@ namespace ConfiguracioParametros.Controllers
             await _auditService.RegistrarAsync("TiposParametro", tipoParametro.IdTipoParametro, "INSERT", userId);
 
             return CreatedAtAction(nameof(GetParametros), new { id = tipoParametro.IdTipoParametro }, tipoParametro);
+        }
+
+        [Authorize(Policy = "PERM_modificacion")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteTipoParametro(int id)
+        {
+            var tipoParametro = await _context.TiposParametros.FirstOrDefaultAsync(tp => tp.IdTipoParametro == id);
+
+            if (tipoParametro == null) return NotFound("El tipo de parametro no existe");
+
+            _context.TiposParametros.Remove(tipoParametro);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Error típico cuando el registro está referenciado por FK
+                return Conflict(new
+                {
+                    message = "No se puede eliminar el tipo de parámetro porque está siendo utilizado por otros registros."
+                });
+            }
         }
     }
 }
