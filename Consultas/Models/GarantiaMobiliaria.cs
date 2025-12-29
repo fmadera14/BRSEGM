@@ -23,7 +23,10 @@ namespace Consultas.Models
         public int IdEstado { get; set; }
         [ForeignKey("IdEstado")]
         public Estado Estado { get; set; }
+
         [Column("id_operaciones")]
         public int IdOperaciones { get; set; }
+        [ForeignKey("IdOperaciones")]
+        public Operacion Operacion { get; set; }
     }
 }
