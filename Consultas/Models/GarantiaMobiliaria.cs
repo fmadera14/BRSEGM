@@ -18,6 +18,8 @@ namespace Consultas.Models
 
         [Column("id_bien")]
         public int IdBien { get; set; }
+        [ForeignKey("IdBien")]
+        public Bien Bien { get; set; }
 
         [Column("id_estado")]
         public int IdEstado { get; set; }
