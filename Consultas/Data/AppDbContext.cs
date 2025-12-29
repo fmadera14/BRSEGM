@@ -17,5 +17,9 @@ namespace Consultas.Data
         public DbSet<TipoAvisoInscripcion> TiposAvisoInscripcion { get; set; }
         public DbSet<TipoEmbargo> TiposEmbargos { get; set; }
         public DbSet<TipoGarantia> TiposGarantias { get; set; }
+
+        public DbSet<TipoPropiedad> TiposPropiedad { get; set; }
+        public DbSet<TipoBien> TiposBien { get; set; }
+        public DbSet<Bien> Bienes { get; set; }
     }
 }
