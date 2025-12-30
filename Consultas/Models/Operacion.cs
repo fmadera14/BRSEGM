@@ -7,7 +7,7 @@ namespace Consultas.Models
     public class Operacion
     {
         [Key]
-        [Column("id_operacion")]
+        [Column("id_operaciones")]
         public int IdOperacion { get; set; }
 
         [Column("fecha_vencimiento")]
@@ -34,7 +34,7 @@ namespace Consultas.Models
         [Column("ejecucion_descripcion_monto_fijado")]
         public decimal EjecucionDescripcionMontoFijado { get; set; }
 
-        [Column("ejecucion_costal_procesales")]
+        [Column("ejecucion_costa_procesales")]
         public decimal EjecucionCostalProcesales { get; set; }
 
         [Column("nombre_sucursal")]
