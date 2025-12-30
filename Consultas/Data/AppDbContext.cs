@@ -21,5 +21,10 @@ namespace Consultas.Data
         public DbSet<TipoPropiedad> TiposPropiedad { get; set; }
         public DbSet<TipoBien> TiposBien { get; set; }
         public DbSet<Bien> Bienes { get; set; }
+
+        public DbSet<TipoDeudor> TiposDeudor { get; set; }
+        public DbSet<TipoIdentificacion> TiposIdentificacion { get; set; }
+        public DbSet<Municipio> Municipios { get; set; }
+        public DbSet<Deudor> Deudores { get; set; }
     }
 }
