@@ -15,6 +15,8 @@ namespace Consultas.Models
 
         [Column("id_deudor")]
         public int IdDeudor { get; set; }
+        [ForeignKey("IdDeudor")]
+        public Deudor Deudor { get; set; }
 
         [Column("id_bien")]
         public int IdBien { get; set; }
