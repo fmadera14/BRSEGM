@@ -26,5 +26,7 @@ namespace Consultas.Data
         public DbSet<TipoIdentificacion> TiposIdentificacion { get; set; }
         public DbSet<Municipio> Municipios { get; set; }
         public DbSet<Deudor> Deudores { get; set; }
+        
+        public DbSet<Acreedor> Acreedores { get; set; }
     }
 }
