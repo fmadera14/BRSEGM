@@ -1,0 +1,22 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=aws-0-us-west-2.pooler.supabase.com;Database=postgres;Username=postgres.erncvmrizwspzxfeyjzb;Password=x7KI5U3w46tiDj;SSL Mode=Require;Trust Server Certificate=true"
+  },
+  "Jwt": {
+    "Key": "6c45df4c1786208290c537d296db4a894e039cd9fe2d543c549e02b1f4b7133c",
+    "Issuer": "YourAppIssuer",
+    "Audience": "YourAppAudience",
+    "ExpireMinutes": 60
+  },
+  "SeedAdmin": {
+    "Username": "admin",
+    "Password": "Admin1234*"
+  }
+}

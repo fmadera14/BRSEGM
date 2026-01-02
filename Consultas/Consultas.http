@@ -1,0 +1,6 @@
+@Consultas_HostAddress = http://localhost:5094
+
+GET {{Consultas_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
